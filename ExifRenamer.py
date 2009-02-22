@@ -49,7 +49,7 @@ def set_options():
 	description="Copies jpeg and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
 	parser = optparse.OptionParser(usage=usage,version=version,description=description)
 
-	parser.set_defaults(original=False,raw=True,strip=0)
+	parser.set_defaults(original=False,raw=True,strip=0,verbose=1)
 
 	'''parser.add_option("-d", "--duplicate",
 		dest="duplicate", action="store_false",
@@ -59,12 +59,12 @@ def set_options():
 		help="Simulate actions without making any changes. (unfinished)")
 	parser.add_option("-t", "--template",
 		dest="template",
-		help="Change destination directory and file format, default: YYYY/MM/DD/YYYY-MM-DD_HH24.MI.SS (unfinished)")
+		help="Change destination directory and file format, default: YYYY/MM/DD/YYYY-MM-DD_HH24.MI.SS (unfinished)")'''
 	parser.add_option("-q", "--quiet",
-		dest="verbose", action="store_false",
-		help="Suppress all output. (unfinished)")'''
+		dest="verbose", action="store_const", const=0,
+		help="Suppress all output. (unfinished)")
 	parser.add_option("-v", "--verbose",
-		dest="verbose", action="store_true",
+		dest="verbose", action="store_const", const=2,
 		help="Verbosely list files processed.")
 	'''parser.add_option("-w", "--raw",
 		dest="raw", action="store_true",
@@ -100,7 +100,7 @@ def rename_photos():
 		for file in file_names:
 			if mimetypes.guess_type(file)[0] == 'image/jpeg':
 				if imghdr.what(os.path.join(dir_path,file)) == 'jpeg':
-					if OPT.verbose:
+					if OPT.verbose >= 2:
 						print "*PROCESS:", os.path.join(dir_path,file)
 					try:
 						tmp = exif_get_datetime(os.path.join(dir_path,file))
@@ -120,7 +120,8 @@ def rename_photos():
 							else:
 								postfix += 1
 					shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
-					print "COPY:", os.path.join(dir_path,file), "==>",os.path.join(dest_dir, dest_filename+".jpg")
+					if OPT.verbose >= 1 :
+						print "COPY:", os.path.join(dir_path,file), "==>",os.path.join(dest_dir, dest_filename+".jpg")
 				else:
 					print "ERROR: Corrupt File -", os.path.join(dir_path,file)
 
@@ -144,7 +145,7 @@ def exif_get_datetime(file, format = None):
 		t = str[10][:-1] #grabs the time
 
 		#handles malformed timestamps
-		if OPT.verbose:
+		if OPT.verbose >= 2:
 			print "TIMESTAMP:",d,t
 		if d == "0000:00:00":
 			raise TimeError(d)
