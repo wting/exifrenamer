@@ -31,7 +31,7 @@ import EXIF
 import cPickle
 import shutil
 
-VERSION = "0.1.2"
+VERSION = "0.1.8"
 
 class TimeError(Exception):
 	def __init__(self, value):
@@ -43,13 +43,13 @@ def set_options():
 	"""
 	Parses command line options, checks source directory existence.
 	"""
-	global OPT, ARG, SOURCE, DEST
+	global OPT, ARG, SOURCE, DEST, FORMAT_DIR, FORMAT_FILE
 	usage="%prog [OPTION] SOURCE DEST"
 	version="%prog " + VERSION
 	description="Copies jpeg and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
 	parser = optparse.OptionParser(usage=usage,version=version,description=description)
 
-	parser.set_defaults(original=False,raw=True,run=True,strip=0,verbose=1)
+	parser.set_defaults(original=False,raw=True,run=True,strip=0,template=None,verbose=1)
 
 	'''parser.add_option("-d", "--duplicate",
 		dest="duplicate", action="store_false",
@@ -57,9 +57,11 @@ def set_options():
 	parser.add_option("-n", "--dry-run",
 		dest="run", action="store_false",
 		help="Simulate actions without making any changes.")
-	'''parser.add_option("-t", "--template",
+	parser.add_option("-t", "--template",
 		dest="template",
-		help="Change destination directory and file format, default: YYYY/MM/DD/YYYY-MM-DD_HH24.MI.SS")'''
+		help="Change destination directory and file format, default: %Y/%m/%d/%Y-%m-%d_%H.%M.%S\
+				%Y = 4 digit year, %y = 2 digit year, %m = 2 digit month, %b = abbreviated month name, %B = full month name, %d = 2 digit day,\
+					%H = 24 hour clock, %I = 12 hour clock, %M = minutes, %S = seconds")
 	parser.add_option("-q", "--quiet",
 		dest="verbose", action="store_const", const=0,
 		help="Suppress all output.")
@@ -89,12 +91,28 @@ def set_options():
 		print "ERROR: SOURCE directory does not exist."
 		sys.exit(2)
 
+	#parse template format
+	if OPT.template == None:	#"%Y/%m/%d/%Y-%m-%d_%H.%M.%S"
+		FORMAT_DIR = "%Y"+os.sep+"%m"+os.sep+"%d"
+		FORMAT_FILE = "%Y-%m-%d_%H.%M.%S"
+	else:
+		if OPT.verbose >= 2:
+			print "*TEMPLATE:",OPT.template
+		if OPT.template.find(os.sep) == -1:
+			print "ERROR: Invalid template, DEST cannot be current directory."
+			sys.exit(2)
+		format = OPT.template.replace("/",os.sep)
+		format = OPT.template.replace("\\",os.sep)
+		format = format.rpartition(os.sep)
+		FORMAT_DIR = format[0]
+		FORMAT_FILE = format[2]
+
 def rename_photos():
 	"""
 	Traverses through source directory, checks for valid jpeg, extracts EXIF timestamp,
 	checks for existing file, creates YYYY/MM/DD dir hieararchy, copies to destination folder.
 	"""
-	global OPT, DEST
+	global OPT, DEST, FORMAT_FILE
 
 	for dir_path, dir_names, file_names in os.walk(SOURCE):
 		for file in file_names:
@@ -102,14 +120,17 @@ def rename_photos():
 				if imghdr.what(os.path.join(dir_path,file)) == 'jpeg':
 					if OPT.verbose >= 2:
 						print "*PROCESS:", os.path.join(dir_path,file)
+
 					try:
 						tmp = exif_get_datetime(os.path.join(dir_path,file))
 					except TimeError, (e):
 						print "ERROR: Timestamp [", e.parameter, "] -", os.path.join(dir_path,file)
 						continue
-					dest_dir = os.path.join(DEST+time.strftime("%Y"+os.sep+"%m"+os.sep+"%d",tmp[0]))
+
+					dest_dir = os.path.join(DEST+time.strftime(FORMAT_DIR,tmp[0]))
 					mk_dir(dest_dir)
 					dest_filename = tmp[1]
+
 					if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")):
 						found_name = False
 						postfix = 1
@@ -127,12 +148,12 @@ def rename_photos():
 					print "ERROR: Corrupt File -", os.path.join(dir_path,file)
 
 
-def exif_get_datetime(file, format = None):
+def exif_get_datetime(file):
 	"""Extracts and parses DateTimeOriginal from the image and if no optional format is
 	passed then returns the default format.  Otherwise it converts into a struct_time and
 	is formatted with the optional parameter.
 	"""
-	global OPT
+	global OPT, FORMAT_FILE
 
 	#retrieve "EXIF DateTimeOriginal" tag
 	f = open(file, 'rb')
@@ -153,10 +174,7 @@ def exif_get_datetime(file, format = None):
 
 		#converts time into a struct_time, always assume tm_isdst=-1
 		t_str = time.strptime(d + " " + t,"%Y:%m:%d %H:%M:%S")
-		if format == None:
-			return (t_str,time.strftime("%Y-%m-%d_%H.%M.%S",t_str))
-		else:
-			return (t_str,time.strftime(format,t_str))
+		return (t_str,time.strftime(FORMAT_FILE,t_str))
 	except KeyError: #handles missing timestamps
 		raise TimeError("missing")
 	except ValueError: #handles malformed timestamps
