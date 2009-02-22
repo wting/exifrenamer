@@ -92,22 +92,30 @@ def rename_photos() :
 
 	for dir_path, dir_names, file_names in os.walk(SOURCE) :
 		for file in file_names :
-			if mimetypes.guess_type(file)[0] == 'image/jpeg' and imghdr.what(os.path.join(dir_path,file)) == 'jpeg' :
-				tmp = exif_get_datetime(os.path.join(dir_path,file))
-				dest_dir = os.path.join(DEST+time.strftime("%Y"+os.sep+"%m"+os.sep+"%d",tmp[0]))
-				mk_dir(dest_dir)
-				dest_filename = tmp[1]
-				if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")) :
-					found_name = False
-					postfix = 1
-					while not found_name :
-						if not os.path.isfile(os.path.join(dest_dir, dest_filename+"_"+str(postfix)+".jpg")) :
-							dest_filename = dest_filename + "_" + str(postfix)
-							found_name = True
-						else :
-							postfix += 1
+			if mimetypes.guess_type(file)[0] == 'image/jpeg' :
+				if imghdr.what(os.path.join(dir_path,file)) == 'jpeg' :
+					try :
+						tmp = exif_get_datetime(os.path.join(dir_path,file))
+					except KeyError:
+						print "SKIP: missing EXIF timestamp -", os.path.join(dir_path,file)
+						continue
+					dest_dir = os.path.join(DEST+time.strftime("%Y"+os.sep+"%m"+os.sep+"%d",tmp[0]))
+					mk_dir(dest_dir)
+					dest_filename = tmp[1]
+					if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")) :
+						found_name = False
+						postfix = 1
+						while not found_name :
+							if not os.path.isfile(os.path.join(dest_dir, dest_filename+"_"+str(postfix)+".jpg")) :
+								dest_filename = dest_filename + "_" + str(postfix)
+								found_name = True
+							else :
+								postfix += 1
+					shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
+					print "COPY:", os.path.join(dir_path,file), "==>",os.path.join(dest_dir, dest_filename+".jpg")
+				else :
+					print "ERROR: invalid/corrupt jpg file -", os.path.join(dir_path,file)
 
-				shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
 
 def exif_get_datetime(file, format = None):
 	"""Extracts and parses DateTimeOriginal from the image and if no optional format is
@@ -121,16 +129,19 @@ def exif_get_datetime(file, format = None):
 	f.close()
 
 	#converts instance into string and splits it
-	str = cPickle.dumps(tags['EXIF DateTimeOriginal']).split()
-	d = str[9][2:] #grabs the date
-	t = str[10][:-1] #grabs the time
+	try :
+		str = cPickle.dumps(tags['EXIF DateTimeOriginal']).split()
+		d = str[9][2:] #grabs the date
+		t = str[10][:-1] #grabs the time
 
-	#converts time into a struct_time, always assume tm_isdst=-1
-	t_str = time.strptime(d + " " + t,"%Y:%m:%d %H:%M:%S")
-	if format == None :
-		return (t_str,time.strftime("%Y-%m-%d_%H.%M.%S",t_str))
-	else :
-		return (t_str,time.strftime(format,t_str))
+		#converts time into a struct_time, always assume tm_isdst=-1
+		t_str = time.strptime(d + " " + t,"%Y:%m:%d %H:%M:%S")
+		if format == None :
+			return (t_str,time.strftime("%Y-%m-%d_%H.%M.%S",t_str))
+		else :
+			return (t_str,time.strftime(format,t_str))
+	except KeyError:
+		raise
 
 def mk_dir(path) :
 	"""
