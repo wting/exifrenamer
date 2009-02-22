@@ -60,6 +60,9 @@ def set_options():
 	parser.add_option("-n", "--dry-run",
 		dest="run", action="store_false",
 		help="Simulate actions without making any changes.")
+	'''parser.add_option("-m", "--move",
+		dest="",action="",
+		help="Move the original file as opposed to copying.")'''
 	parser.add_option("-t", "--template",
 		dest="template",
 		help="Change destination directory and file format, default: %Y/%m/%d/%Y-%m-%d_%H.%M.%S\
