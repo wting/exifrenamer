@@ -49,29 +49,29 @@ def set_options():
 	description="Copies jpeg and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
 	parser = optparse.OptionParser(usage=usage,version=version,description=description)
 
-	parser.set_defaults(original=False,raw=True,strip=0,verbose=1)
+	parser.set_defaults(original=False,raw=True,run=True,strip=0,verbose=1)
 
 	'''parser.add_option("-d", "--duplicate",
 		dest="duplicate", action="store_false",
-		help="Check for duplicates. (unfinished)")
+		help="Check for duplicates.")'''
 	parser.add_option("-n", "--dry-run",
-		dest="dry-run", action="store_false",
-		help="Simulate actions without making any changes. (unfinished)")
-	parser.add_option("-t", "--template",
+		dest="run", action="store_false",
+		help="Simulate actions without making any changes.")
+	'''parser.add_option("-t", "--template",
 		dest="template",
-		help="Change destination directory and file format, default: YYYY/MM/DD/YYYY-MM-DD_HH24.MI.SS (unfinished)")'''
+		help="Change destination directory and file format, default: YYYY/MM/DD/YYYY-MM-DD_HH24.MI.SS")'''
 	parser.add_option("-q", "--quiet",
 		dest="verbose", action="store_const", const=0,
-		help="Suppress all output. (unfinished)")
+		help="Suppress all output.")
 	parser.add_option("-v", "--verbose",
 		dest="verbose", action="store_const", const=2,
 		help="Verbosely list files processed.")
 	'''parser.add_option("-w", "--raw",
 		dest="raw", action="store_true",
-		help="Performs same actions on raw files with the same filename. [default] (unfinished)")
+		help="Performs same actions on raw files with the same filename. [default]")
 	parser.add_option("-W", "--noraw",
 		dest="raw", action="store_false",
-		help="Do not perform same actions on raw files with the same filename. (unfinished)")'''
+		help="Do not perform same actions on raw files with the same filename.")'''
 
 	(OPT, ARG) = parser.parse_args()
 
@@ -119,9 +119,10 @@ def rename_photos():
 								found_name = True
 							else:
 								postfix += 1
-					shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
+					if OPT.run:
+						shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
 					if OPT.verbose >= 1 :
-						print "COPY:", os.path.join(dir_path,file), "==>",os.path.join(dest_dir, dest_filename+".jpg")
+						print "COPY:", os.path.join(dir_path,file), "-->",os.path.join(dest_dir, dest_filename+".jpg")
 				else:
 					print "ERROR: Corrupt File -", os.path.join(dir_path,file)
 
@@ -165,9 +166,12 @@ def mk_dir(path):
 	"""
 	Encapsulating os.makedirs within a try/catch block.
 	"""
+	global OPT
+
 	if not os.path.exists(path):
 		try:
-			os.makedirs(path)
+			if OPT.run:
+				os.makedirs(path)
 		except OSError:
 			print "ERROR: Unable to create directory:",path
 			sys.exit(1)
@@ -175,4 +179,7 @@ def mk_dir(path):
 if __name__ == "__main__":
 	set_options()
 	rename_photos()
+
+	if not OPT.run:
+		print "DRY RUN: All actions simulated."
 	sys.exit(0)
