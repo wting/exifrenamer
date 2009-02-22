@@ -33,13 +33,13 @@ import shutil
 
 VERSION = "0.1.2"
 
-class TimeError(Exception) :
-	def __init__(self, value) :
+class TimeError(Exception):
+	def __init__(self, value):
 		self.parameter = value
-	def __str__(self) :
+	def __str__(self):
 		return repr(self.parameter)
 
-def set_options() :
+def set_options():
 	"""
 	Parses command line options, checks source directory existence.
 	"""
@@ -51,7 +51,7 @@ def set_options() :
 
 	parser.set_defaults(original=False,raw=True,strip=0)
 
-	parser.add_option("-d", "--duplicate",
+	'''parser.add_option("-d", "--duplicate",
 		dest="duplicate", action="store_false",
 		help="Check for duplicates. (unfinished)")
 	parser.add_option("-n", "--dry-run",
@@ -62,47 +62,47 @@ def set_options() :
 		help="Change destination directory and file format, default: YYYY/MM/DD/YYYY-MM-DD_HH24.MI.SS (unfinished)")
 	parser.add_option("-q", "--quiet",
 		dest="verbose", action="store_false",
-		help="Suppress all output. (unfinished)")
+		help="Suppress all output. (unfinished)")'''
 	parser.add_option("-v", "--verbose",
 		dest="verbose", action="store_true",
 		help="Verbosely list files processed.")
-	parser.add_option("-w", "--raw",
+	'''parser.add_option("-w", "--raw",
 		dest="raw", action="store_true",
 		help="Performs same actions on raw files with the same filename. [default] (unfinished)")
 	parser.add_option("-W", "--noraw",
 		dest="raw", action="store_false",
-		help="Do not perform same actions on raw files with the same filename. (unfinished)")
+		help="Do not perform same actions on raw files with the same filename. (unfinished)")'''
 
 	(OPT, ARG) = parser.parse_args()
 
 	#checks for SOURCE and DEST arguments
-	if len(ARG) == 1 and OPT.original == False :
+	if len(ARG) == 1 and OPT.original == False:
 		parser.error("The option --original (modifies the source files) must be specified when using only a source directory.")
-	elif len(ARG) < 2 and OPT.original == False :
+	elif len(ARG) < 2 and OPT.original == False:
 		parser.print_help()
 		sys.exit(2)
 
 	#check for SOURCE
 	SOURCE = ARG[0]
 	DEST = ARG[1]
-	if not os.path.exists(SOURCE) :
+	if not os.path.exists(SOURCE):
 		print "ERROR: SOURCE directory does not exist."
 		sys.exit(2)
 
-def rename_photos() :
+def rename_photos():
 	"""
 	Traverses through source directory, checks for valid jpeg, extracts EXIF timestamp,
 	checks for existing file, creates YYYY/MM/DD dir hieararchy, copies to destination folder.
 	"""
 	global OPT, DEST
 
-	for dir_path, dir_names, file_names in os.walk(SOURCE) :
-		for file in file_names :
-			if mimetypes.guess_type(file)[0] == 'image/jpeg' :
-				if imghdr.what(os.path.join(dir_path,file)) == 'jpeg' :
-					if OPT.verbose :
+	for dir_path, dir_names, file_names in os.walk(SOURCE):
+		for file in file_names:
+			if mimetypes.guess_type(file)[0] == 'image/jpeg':
+				if imghdr.what(os.path.join(dir_path,file)) == 'jpeg':
+					if OPT.verbose:
 						print "*PROCESS:", os.path.join(dir_path,file)
-					try :
+					try:
 						tmp = exif_get_datetime(os.path.join(dir_path,file))
 					except TimeError, (e):
 						print "ERROR: Timestamp [", e.parameter, "] -", os.path.join(dir_path,file)
@@ -110,18 +110,18 @@ def rename_photos() :
 					dest_dir = os.path.join(DEST+time.strftime("%Y"+os.sep+"%m"+os.sep+"%d",tmp[0]))
 					mk_dir(dest_dir)
 					dest_filename = tmp[1]
-					if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")) :
+					if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")):
 						found_name = False
 						postfix = 1
-						while not found_name :
-							if not os.path.isfile(os.path.join(dest_dir, dest_filename+"_"+str(postfix)+".jpg")) :
+						while not found_name:
+							if not os.path.isfile(os.path.join(dest_dir, dest_filename+"_"+str(postfix)+".jpg")):
 								dest_filename = dest_filename + "_" + str(postfix)
 								found_name = True
-							else :
+							else:
 								postfix += 1
 					shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
 					print "COPY:", os.path.join(dir_path,file), "==>",os.path.join(dest_dir, dest_filename+".jpg")
-				else :
+				else:
 					print "ERROR: Corrupt File -", os.path.join(dir_path,file)
 
 
@@ -138,37 +138,40 @@ def exif_get_datetime(file, format = None):
 	f.close()
 
 	#converts instance into string and splits it
-	try :
+	try:
 		str = cPickle.dumps(tags['EXIF DateTimeOriginal']).split()
-		#if OPT.verbose :
-			#print "TIMESTAMP:",str
 		d = str[9][2:] #grabs the date
 		t = str[10][:-1] #grabs the time
 
-		if d == "0000:00:00" :
-			raise TimeError((d,t))
+		#handles malformed timestamps
+		if OPT.verbose:
+			print "TIMESTAMP:",d,t
+		if d == "0000:00:00":
+			raise TimeError(d)
 
 		#converts time into a struct_time, always assume tm_isdst=-1
 		t_str = time.strptime(d + " " + t,"%Y:%m:%d %H:%M:%S")
-		if format == None :
+		if format == None:
 			return (t_str,time.strftime("%Y-%m-%d_%H.%M.%S",t_str))
-		else :
+		else:
 			return (t_str,time.strftime(format,t_str))
-	except KeyError: #for missing timestamp tags
-		raise TimeError(None)
+	except KeyError: #handles missing timestamps
+		raise TimeError("missing")
+	except ValueError: #handles malformed timestamps
+		raise TimeError("malformed")
 
-def mk_dir(path) :
+def mk_dir(path):
 	"""
 	Encapsulating os.makedirs within a try/catch block.
 	"""
 	if not os.path.exists(path):
-		try :
+		try:
 			os.makedirs(path)
-		except OSError :
+		except OSError:
 			print "ERROR: Unable to create directory:",path
 			sys.exit(1)
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
 	set_options()
 	rename_photos()
 	sys.exit(0)
