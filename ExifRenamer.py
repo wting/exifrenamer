@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
-# Copies jpegs from source to destination while renaming based on EXIF timestamp
+# Copies jpegs from source to destination while renaming based on EXIF
+# timestamp
+#
 # Copyright (c) 2009 William Ting (william dot h dot ting at gmail dot com)
-#     All rights reserved
+# All rights reserved
+# Site: https://sourceforge.net/projects/exifedit
+# SVN: svn co https://exifedit.svn.sourceforge.net/svnroot/exifedit
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +31,7 @@ import EXIF
 import cPickle
 import shutil
 
-VERSION = "0.1.17"
+VERSION = "0.1.2"
 
 def set_options() :
 	"""
