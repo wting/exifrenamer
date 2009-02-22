@@ -33,6 +33,12 @@ import shutil
 
 VERSION = "0.1.2"
 
+class TimeError(Exception) :
+	def __init__(self, value) :
+		self.parameter = value
+	def __str__(self) :
+		return repr(self.parameter)
+
 def set_options() :
 	"""
 	Parses command line options, checks source directory existence.
@@ -43,7 +49,7 @@ def set_options() :
 	description="Copies jpeg and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
 	parser = optparse.OptionParser(usage=usage,version=version,description=description)
 
-	parser.set_defaults(original=False,raw=True,strip=0,verbose=True)
+	parser.set_defaults(original=False,raw=True,strip=0)
 
 	parser.add_option("-d", "--duplicate",
 		dest="duplicate", action="store_false",
@@ -59,7 +65,7 @@ def set_options() :
 		help="Suppress all output. (unfinished)")
 	parser.add_option("-v", "--verbose",
 		dest="verbose", action="store_true",
-		help="Verbosely list files processed. [default]")
+		help="Verbosely list files processed.")
 	parser.add_option("-w", "--raw",
 		dest="raw", action="store_true",
 		help="Performs same actions on raw files with the same filename. [default] (unfinished)")
@@ -88,16 +94,18 @@ def rename_photos() :
 	Traverses through source directory, checks for valid jpeg, extracts EXIF timestamp,
 	checks for existing file, creates YYYY/MM/DD dir hieararchy, copies to destination folder.
 	"""
-	global DEST
+	global OPT, DEST
 
 	for dir_path, dir_names, file_names in os.walk(SOURCE) :
 		for file in file_names :
 			if mimetypes.guess_type(file)[0] == 'image/jpeg' :
 				if imghdr.what(os.path.join(dir_path,file)) == 'jpeg' :
+					if OPT.verbose :
+						print "*PROCESS:", os.path.join(dir_path,file)
 					try :
 						tmp = exif_get_datetime(os.path.join(dir_path,file))
-					except KeyError:
-						print "SKIP: missing EXIF timestamp -", os.path.join(dir_path,file)
+					except TimeError, (e):
+						print "ERROR: Timestamp [", e.parameter, "] -", os.path.join(dir_path,file)
 						continue
 					dest_dir = os.path.join(DEST+time.strftime("%Y"+os.sep+"%m"+os.sep+"%d",tmp[0]))
 					mk_dir(dest_dir)
@@ -114,7 +122,7 @@ def rename_photos() :
 					shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
 					print "COPY:", os.path.join(dir_path,file), "==>",os.path.join(dest_dir, dest_filename+".jpg")
 				else :
-					print "ERROR: invalid/corrupt jpg file -", os.path.join(dir_path,file)
+					print "ERROR: Corrupt File -", os.path.join(dir_path,file)
 
 
 def exif_get_datetime(file, format = None):
@@ -122,6 +130,7 @@ def exif_get_datetime(file, format = None):
 	passed then returns the default format.  Otherwise it converts into a struct_time and
 	is formatted with the optional parameter.
 	"""
+	global OPT
 
 	#retrieve "EXIF DateTimeOriginal" tag
 	f = open(file, 'rb')
@@ -131,8 +140,13 @@ def exif_get_datetime(file, format = None):
 	#converts instance into string and splits it
 	try :
 		str = cPickle.dumps(tags['EXIF DateTimeOriginal']).split()
+		#if OPT.verbose :
+			#print "TIMESTAMP:",str
 		d = str[9][2:] #grabs the date
 		t = str[10][:-1] #grabs the time
+
+		if d == "0000:00:00" :
+			raise TimeError((d,t))
 
 		#converts time into a struct_time, always assume tm_isdst=-1
 		t_str = time.strptime(d + " " + t,"%Y:%m:%d %H:%M:%S")
@@ -140,8 +154,8 @@ def exif_get_datetime(file, format = None):
 			return (t_str,time.strftime("%Y-%m-%d_%H.%M.%S",t_str))
 		else :
 			return (t_str,time.strftime(format,t_str))
-	except KeyError:
-		raise
+	except KeyError: #for missing timestamp tags
+		raise TimeError(None)
 
 def mk_dir(path) :
 	"""
