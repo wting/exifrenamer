@@ -27,11 +27,14 @@ import optparse
 import os
 import sys
 import time
-import EXIF
 import cPickle
 import shutil
 
-VERSION = "0.1.8"
+#included with package, otherwise located at
+#https://sourceforge.net/projects/exif-py/
+import EXIF
+
+VERSION = "0.1.9"
 
 class TimeError(Exception):
 	def __init__(self, value):

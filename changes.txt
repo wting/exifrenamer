@@ -1,3 +1,8 @@
+2009-02-22: William Ting
+- added test images
+- handles images with bad or missing timestamps
+- added options: verbosity, quiet, custom template, dry-run/simulation
+
 2009-02-21: William Ting
 - initial file load
 - project currently in alpha status
