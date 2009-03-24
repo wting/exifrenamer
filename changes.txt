@@ -1,3 +1,7 @@
+2009-03-23: William Ting
+- set default output directory if destination directory is missing
+- copies correpsonding named raw files to same destination / filename as jpg
+
 2009-02-22: William Ting
 - added test images
 - handles images with bad or missing timestamps
