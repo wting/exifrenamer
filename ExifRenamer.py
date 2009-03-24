@@ -21,6 +21,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#todo:
+#default output directory
+
+#finished:
+#-default output when missing DEST
+
 import imghdr
 import mimetypes
 import optparse
@@ -35,6 +41,7 @@ import shutil
 import EXIF
 
 VERSION = "0.1.9"
+IMAGES = []
 
 class TimeError(Exception):
 	def __init__(self, value):
@@ -74,28 +81,28 @@ def set_options():
 	parser.add_option("-v", "--verbose",
 		dest="verbose", action="store_const", const=2,
 		help="Verbosely list files processed.")
-	'''parser.add_option("-w", "--raw",
-		dest="raw", action="store_true",
-		help="Performs same actions on raw files with the same filename. [default]")
-	parser.add_option("-W", "--noraw",
+	parser.add_option("-w", "--noraw",
 		dest="raw", action="store_false",
-		help="Do not perform same actions on raw files with the same filename.")'''
+		help="Do not perform same actions on raw files with the same filename.")
 
 	(OPT, ARG) = parser.parse_args()
 
-	#checks for SOURCE and DEST arguments
-	if len(ARG) == 1 and OPT.original == False:
-		parser.error("The option --original (modifies the source files) must be specified when using only a source directory.")
-	elif len(ARG) < 2 and OPT.original == False:
-		parser.print_help()
-		sys.exit(2)
-
 	#check for SOURCE
 	SOURCE = ARG[0]
-	DEST = ARG[1]
 	if not os.path.exists(SOURCE):
 		print "ERROR: SOURCE directory does not exist."
 		sys.exit(2)
+
+	#checks for SOURCE and DEST arguments
+	if len(ARG) == 1 and OPT.original == False:
+		#parser.error("The option --original (modifies the source files) must be specified when using only a source directory.")
+		print "No DEST directory specified, using default directory ./ExifRenamer-output/"
+		DEST = "ExifRenamer-output/"
+	elif len(ARG) < 2 and OPT.original == False:
+		parser.print_help()
+		sys.exit(2)
+	else:
+		DEST = ARG[1]
 
 	#parse template format
 	if OPT.template == None:	#"%Y/%m/%d/%Y-%m-%d_%H.%M.%S"
@@ -113,49 +120,78 @@ def set_options():
 		FORMAT_DIR = format[0]
 		FORMAT_FILE = format[2]
 
-def rename_photos():
+def build_list():
 	"""
 	Traverses through source directory, checks for valid jpeg, extracts EXIF timestamp,
 	checks for existing file, creates YYYY/MM/DD dir hieararchy, copies to destination folder.
 	"""
-	global OPT, DEST, FORMAT_FILE
+	global IMAGES
 
+	if OPT.verbose >= 1:
+		print "Building file list",
+	cnt = 0
 	for dir_path, dir_names, file_names in os.walk(SOURCE):
 		for file in file_names:
-			if mimetypes.guess_type(file)[0] == 'image/jpeg':
-				if imghdr.what(os.path.join(dir_path,file)) == 'jpeg':
-					if OPT.verbose >= 2:
-						print "*PROCESS:", os.path.join(dir_path,file)
+			#finds jpegs based on mimetype and image headers
+			if mimetypes.guess_type(file)[0] == 'image/jpeg' and imghdr.what(os.path.join(dir_path,file)) == 'jpeg':
+				IMAGES.append((dir_path,file))
+				if OPT.verbose >= 1:
+					if cnt % 100 == 0:
+						print ".",
+				cnt += 1
+	print
 
-					try:
-						tmp = exif_get_datetime(os.path.join(dir_path,file))
-					except TimeError, (e):
-						print "ERROR: Timestamp [", e.parameter, "] -", os.path.join(dir_path,file)
-						continue
+def process_list():
+	global OPT, DEST, FORMAT_FILE, IMAGES
 
-					dest_dir = os.path.join(DEST+time.strftime(FORMAT_DIR,tmp[0]))
-					mk_dir(dest_dir)
-					dest_filename = tmp[1]
+	raw_exts = ["NEF","nef","CR2","cr2"]
+	for dir_path, file in IMAGES:
+		#handle bad timestamps within jpegs
+		try:
+			if OPT.verbose >= 2:
+				print "*PROCESS:", os.path.join(dir_path,file)
+			tmp = exif_get_datetime(os.path.join(dir_path,file))
+		except TimeError, (e):
+			print "ERROR: Timestamp [", e.parameter, "] -", os.path.join(dir_path,file)
+			continue
 
-					if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")):
-						found_name = False
-						postfix = 1
-						while not found_name:
-							if not os.path.isfile(os.path.join(dest_dir, dest_filename+"_"+str(postfix)+".jpg")):
-								dest_filename = dest_filename + "_" + str(postfix)
-								found_name = True
-							else:
-								postfix += 1
-					if OPT.run:
-						shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir, dest_filename+".jpg"))
-					if OPT.verbose >= 1 :
-						print "COPY:", os.path.join(dir_path,file), "-->",os.path.join(dest_dir, dest_filename+".jpg")
+		dest_dir = os.path.join(DEST+time.strftime(FORMAT_DIR,tmp[0]))
+		mk_dir(dest_dir)
+		dest_filename = tmp[1]
+
+		#check for collisions
+		if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")):
+			found_name = False
+			postfix = 1
+			while not found_name:
+				if not os.path.isfile(os.path.join(dest_dir, dest_filename+"_"+str(postfix)+".jpg")):
+					dest_filename = dest_filename + "_" + str(postfix)
+					found_name = True
 				else:
-					print "ERROR: Corrupt File -", os.path.join(dir_path,file)
+					postfix += 1
 
+		#find raw files
+		raw_ext = ""  #assumes one raw file per jpg
+		if OPT.raw:
+			filename_base = os.path.splitext(file)[0]
+			for ext in raw_exts:
+				if os.path.isfile(os.path.join(dir_path,filename_base+"."+ext)):
+					raw_ext = ext
+					#filename_raw = os.path.join(dir_path,filename_base+"."+ext)
+
+		if OPT.run:
+			shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir,dest_filename+".jpg"))
+			if OPT.raw and raw_ext != "":
+				shutil.copy2(os.path.join(dir_path,filename_base+"."+raw_ext),os.path.join(dest_dir,dest_filename+"."+raw_ext))
+
+		if OPT.verbose >= 1:
+			print "COPY:", os.path.join(dir_path,file), "\n\t-->",os.path.join(dest_dir,dest_filename+".jpg")
+			if OPT.raw and raw_ext != "":
+				print "COPY:", os.path.join(dir_path,filename_base+"."+raw_ext), "\n\t-->",os.path.join(dest_dir,dest_filename+"."+raw_ext)
 
 def exif_get_datetime(file):
-	"""Extracts and parses DateTimeOriginal from the image and if no optional format is
+	"""
+	Extracts and parses DateTimeOriginal from the image and if no optional format is
 	passed then returns the default format.  Otherwise it converts into a struct_time and
 	is formatted with the optional parameter.
 	"""
@@ -202,7 +238,9 @@ def mk_dir(path):
 
 if __name__ == "__main__":
 	set_options()
-	rename_photos()
+	build_list()
+	process_list()
+	#rename_photos()
 
 	if not OPT.run:
 		print "DRY RUN: All actions simulated."
