@@ -22,10 +22,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #todo:
-#default output directory
+#change process_data to be more legible
+#move original filename
+#native raw file handling
+#move over copy
 
 #finished:
-#-default output when missing DEST
 
 import imghdr
 import mimetypes
@@ -40,7 +42,7 @@ import shutil
 #https://sourceforge.net/projects/exif-py/
 import EXIF
 
-VERSION = "0.1.9"
+VERSION = "0.1.12"
 IMAGES = []
 
 class TimeError(Exception):
@@ -144,7 +146,8 @@ def build_list():
 def process_list():
 	global OPT, DEST, FORMAT_FILE, IMAGES
 
-	raw_exts = ["NEF","nef","CR2","cr2"]
+	#list from: http://en.wikipedia.org/wiki/Raw_image_format
+	raw_exts = [".raf",".crw",".cr2",".tif",".mrw",".nef",".nrw",".orf",".dng",".ptx",".pex",".arw",".srf",".sr2",".raw",".rw2"]
 	for dir_path, file in IMAGES:
 		#handle bad timestamps within jpegs
 		try:
@@ -177,7 +180,8 @@ def process_list():
 			for ext in raw_exts:
 				if os.path.isfile(os.path.join(dir_path,filename_base+"."+ext)):
 					raw_ext = ext
-					#filename_raw = os.path.join(dir_path,filename_base+"."+ext)
+				elif os.path.isfile(os.path.join(dir_path,filename_base+"."+ext.upper())):
+					raw_ext = ext.upper()
 
 		if OPT.run:
 			shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir,dest_filename+".jpg"))
