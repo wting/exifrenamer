@@ -37,6 +37,7 @@ import sys
 import time
 import cPickle
 import shutil
+import hashlib
 
 #included with package, otherwise located at
 #https://sourceforge.net/projects/exif-py/
@@ -89,12 +90,6 @@ def set_options():
 
 	(OPT, ARG) = parser.parse_args()
 
-	#check for SOURCE
-	SOURCE = ARG[0]
-	if not os.path.exists(SOURCE):
-		print "ERROR: SOURCE directory does not exist."
-		sys.exit(2)
-
 	#checks for SOURCE and DEST arguments
 	if len(ARG) == 1 and OPT.original == False:
 		#parser.error("The option --original (modifies the source files) must be specified when using only a source directory.")
@@ -105,6 +100,12 @@ def set_options():
 		sys.exit(2)
 	else:
 		DEST = ARG[1]
+
+	#check for SOURCE
+	SOURCE = ARG[0]
+	if not os.path.exists(SOURCE):
+		print "ERROR: SOURCE directory does not exist."
+		sys.exit(2)
 
 	#parse template format
 	if OPT.template == None:	#"%Y/%m/%d/%Y-%m-%d_%H.%M.%S"
@@ -127,7 +128,7 @@ def build_list():
 	Traverses through source directory, checks for valid jpeg, extracts EXIF timestamp,
 	checks for existing file, creates YYYY/MM/DD dir hieararchy, copies to destination folder.
 	"""
-	global IMAGES
+	global IMAGES,SOURCE
 
 	if OPT.verbose >= 1:
 		print "Building file list",
@@ -141,57 +142,69 @@ def build_list():
 					if cnt % 100 == 0:
 						print ".",
 				cnt += 1
-	print
+	print "\n",len(IMAGES),"jpegs to consider."
 
 def process_list():
 	global OPT, DEST, FORMAT_FILE, IMAGES
 
 	#list from: http://en.wikipedia.org/wiki/Raw_image_format
 	raw_exts = [".raf",".crw",".cr2",".tif",".mrw",".nef",".nrw",".orf",".dng",".ptx",".pex",".arw",".srf",".sr2",".raw",".rw2"]
-	for dir_path, file in IMAGES:
+	for source_dir, source_file in IMAGES:
+		source = os.path.join(source_dir,source_file)
+		source_base = os.path.splitext(source)[0]
+
 		#handle bad timestamps within jpegs
 		try:
 			if OPT.verbose >= 2:
-				print "*PROCESS:", os.path.join(dir_path,file)
-			tmp = exif_get_datetime(os.path.join(dir_path,file))
+				print "*PROCESS:",source
+			tmp = exif_get_datetime(source)
 		except TimeError, (e):
-			print "ERROR: Timestamp [", e.parameter, "] -", os.path.join(dir_path,file)
+			print "ERROR:",source,"\n\t-->","invalid timestamp:", e.parameter
 			continue
 
 		dest_dir = os.path.join(DEST+time.strftime(FORMAT_DIR,tmp[0]))
 		mk_dir(dest_dir)
-		dest_filename = tmp[1]
+		dest = os.path.join(dest_dir,tmp[1]+".jpg")
+		dest_base = os.path.splitext(dest)[0]
 
 		#check for collisions
-		if os.path.isfile(os.path.join(dest_dir, dest_filename+".jpg")):
-			found_name = False
+		skip = False
+		if os.path.isfile(dest):
+			if md5sum(source) == md5sum(dest):
+				found_name = True
+				skip = True
+				if OPT.verbose >= 1:
+					print "SKIP:",source,"\n\t--> exists at destination:",dest
+			else:
+				found_name = False
 			postfix = 1
 			while not found_name:
-				if not os.path.isfile(os.path.join(dest_dir, dest_filename+"_"+str(postfix)+".jpg")):
-					dest_filename = dest_filename + "_" + str(postfix)
+				if not os.path.isfile(dest_base+"_"+str(postfix)+".jpg"):
+					dest_base += "_" + str(postfix)
+					dest = dest_base + ".jpg"
 					found_name = True
 				else:
 					postfix += 1
 
-		#find raw files
-		raw_ext = ""  #assumes one raw file per jpg
-		if OPT.raw:
-			filename_base = os.path.splitext(file)[0]
-			for ext in raw_exts:
-				if os.path.isfile(os.path.join(dir_path,filename_base+"."+ext)):
-					raw_ext = ext
-				elif os.path.isfile(os.path.join(dir_path,filename_base+"."+ext.upper())):
-					raw_ext = ext.upper()
+		if not skip:
+			#find raw files
+			raw_ext = ""  #assumes one raw file per jpg
+			if OPT.raw:
+				for ext in raw_exts:
+					if os.path.isfile(source_base+ext):
+						raw_ext = ext
+					elif os.path.isfile(source_base+ext.upper()):
+						raw_ext = ext.upper()
 
-		if OPT.run:
-			shutil.copy2(os.path.join(dir_path,file),os.path.join(dest_dir,dest_filename+".jpg"))
-			if OPT.raw and raw_ext != "":
-				shutil.copy2(os.path.join(dir_path,filename_base+"."+raw_ext),os.path.join(dest_dir,dest_filename+"."+raw_ext))
+			if OPT.run:
+				shutil.copy2(source,dest)
+				if OPT.raw and raw_ext != "":
+					shutil.copy2(source_base+raw_ext,dest_base+raw_ext)
 
-		if OPT.verbose >= 1:
-			print "COPY:", os.path.join(dir_path,file), "\n\t-->",os.path.join(dest_dir,dest_filename+".jpg")
-			if OPT.raw and raw_ext != "":
-				print "COPY:", os.path.join(dir_path,filename_base+"."+raw_ext), "\n\t-->",os.path.join(dest_dir,dest_filename+"."+raw_ext)
+			if OPT.verbose >= 1:
+				print "COPY:",source,"\n\t-->",dest
+				if OPT.raw and raw_ext != "":
+					print "COPY:",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
 
 def exif_get_datetime(file):
 	"""
@@ -225,6 +238,21 @@ def exif_get_datetime(file):
 		raise TimeError("missing")
 	except ValueError: #handles malformed timestamps
 		raise TimeError("malformed")
+
+def md5sum(fname):
+	try:
+		f = file(fname,'rb')
+	except:
+		return None ##cannot open file
+
+	m = hashlib.md5()
+	while True:
+		d = f.read(8096)
+		if not d:
+			break
+		m.update(d)
+
+	return m.hexdigest()
 
 def mk_dir(path):
 	"""
