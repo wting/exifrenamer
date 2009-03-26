@@ -22,12 +22,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #todo:
-#change process_data to be more legible
-#move original filename
-#native raw file handling
-#move over copy
-
-#finished:
 
 import imghdr
 import mimetypes
@@ -43,7 +37,7 @@ import hashlib
 #https://sourceforge.net/projects/exif-py/
 import EXIF
 
-VERSION = "0.1.12"
+VERSION = "0.1.16"
 IMAGES = []
 
 class TimeError(Exception):
@@ -62,17 +56,14 @@ def set_options():
 	description="Copies jpeg and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
 	parser = optparse.OptionParser(usage=usage,version=version,description=description)
 
-	parser.set_defaults(original=False,raw=True,run=True,strip=0,template=None,verbose=1)
+	parser.set_defaults(original=False,move=False,raw=True,run=True,template=None,verbose=1)
 
-	'''parser.add_option("-d", "--duplicate",
-		dest="duplicate", action="store_false",
-		help="Check for duplicates.")'''
 	parser.add_option("-n", "--dry-run",
 		dest="run", action="store_false",
 		help="Simulate actions without making any changes.")
-	'''parser.add_option("-m", "--move",
-		dest="",action="",
-		help="Move the original file as opposed to copying.")'''
+	parser.add_option("-m", "--move",
+		dest="move",action="store_true",
+		help="Move the original file as opposed to copying.")
 	parser.add_option("-t", "--template",
 		dest="template",
 		help="Change destination directory and file format, default: %Y/%m/%d/%Y-%m-%d_%H.%M.%S\
@@ -145,6 +136,9 @@ def build_list():
 	print "\n",len(IMAGES),"jpegs to consider."
 
 def process_list():
+	"""
+	Traverses the list and copies/moves it to the destination.
+	"""
 	global OPT, DEST, FORMAT_FILE, IMAGES
 
 	#list from: http://en.wikipedia.org/wiki/Raw_image_format
@@ -197,14 +191,24 @@ def process_list():
 						raw_ext = ext.upper()
 
 			if OPT.run:
-				shutil.copy2(source,dest)
-				if OPT.raw and raw_ext != "":
-					shutil.copy2(source_base+raw_ext,dest_base+raw_ext)
+				if not OPT.move:
+					shutil.copy2(source,dest)
+					if OPT.raw and raw_ext != "":
+						shutil.copy2(source_base+raw_ext,dest_base+raw_ext)
+				else:
+					shutil.move(source,dest)
+					if OPT.raw and raw_ext != "":
+						shutil.move(source_base+raw_ext,dest_base+raw_ext)
 
 			if OPT.verbose >= 1:
-				print "COPY:",source,"\n\t-->",dest
-				if OPT.raw and raw_ext != "":
-					print "COPY:",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
+				if not OPT.move:
+					print "COPY:",source,"\n\t-->",dest
+					if OPT.raw and raw_ext != "":
+						print "COPY:",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
+				else:
+					print "MOVE:",source,"\n\t-->",dest
+					if OPT.raw and raw_ext != "":
+						print "MOVE:",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
 
 def exif_get_datetime(file):
 	"""
@@ -240,6 +244,9 @@ def exif_get_datetime(file):
 		raise TimeError("malformed")
 
 def md5sum(fname):
+	"""
+	Returns the md5sum of a filename.
+	"""
 	try:
 		f = file(fname,'rb')
 	except:
