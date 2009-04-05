@@ -143,17 +143,20 @@ def process_list():
 
 	#list from: http://en.wikipedia.org/wiki/Raw_image_format
 	raw_exts = [".raf",".crw",".cr2",".tif",".mrw",".nef",".nrw",".orf",".dng",".ptx",".pex",".arw",".srf",".sr2",".raw",".rw2"]
+	index = 1
 	for source_dir, source_file in IMAGES:
+		count = "[" + str(index) + "/" + str(len(IMAGES)) + "]"
+		index += 1
 		source = os.path.join(source_dir,source_file)
 		source_base = os.path.splitext(source)[0]
 
 		#handle bad timestamps within jpegs
 		try:
 			if OPT.verbose >= 2:
-				print "*PROCESS:",source
+				print "*PROCESS",count,":",source
 			tmp = exif_get_datetime(source)
 		except TimeError, (e):
-			print "ERROR:",source,"\n\t-->","invalid timestamp:", e.parameter
+			print "ERROR",count,":",source,"\n\t-->","invalid timestamp:", e.parameter
 			continue
 
 		dest_dir = os.path.join(DEST+time.strftime(FORMAT_DIR,tmp[0]))
@@ -168,7 +171,7 @@ def process_list():
 				found_name = True
 				skip = True
 				if OPT.verbose >= 1:
-					print "SKIP:",source,"\n\t--> exists at destination:",dest
+					print "SKIP",count,":",source,"\n\t--> exists at destination:",dest
 			else:
 				found_name = False
 			postfix = 1
@@ -202,13 +205,13 @@ def process_list():
 
 			if OPT.verbose >= 1:
 				if not OPT.move:
-					print "COPY:",source,"\n\t-->",dest
+					print "COPY",count,":",source,"\n\t-->",dest
 					if OPT.raw and raw_ext != "":
-						print "COPY:",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
+						print "COPY",count,":",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
 				else:
-					print "MOVE:",source,"\n\t-->",dest
+					print "MOVE",count,":",source,"\n\t-->",dest
 					if OPT.raw and raw_ext != "":
-						print "MOVE:",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
+						print "MOVE",count,":",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
 
 def exif_get_datetime(file):
 	"""
