@@ -140,6 +140,7 @@ def process_list():
 	Traverses the list and copies/moves it to the destination.
 	"""
 	global OPT, DEST, FORMAT_FILE, IMAGES
+	error = []
 
 	#list from: http://en.wikipedia.org/wiki/Raw_image_format
 	raw_exts = [".raf",".crw",".cr2",".tif",".mrw",".nef",".nrw",".orf",".dng",".ptx",".pex",".arw",".srf",".sr2",".raw",".rw2"]
@@ -156,7 +157,8 @@ def process_list():
 				print "*PROCESS",count,":",source
 			tmp = exif_get_datetime(source)
 		except TimeError, (e):
-			print "ERROR",count,":",source,"\n\t-->","invalid timestamp:", e.parameter
+			print "ERROR",count,":",source,"\n\t--> invalid timestamp:", e.parameter
+			error.append(source + "\n\t--> invalid timestamp:" + e.parameter)
 			continue
 
 		dest_dir = os.path.join(DEST+time.strftime(FORMAT_DIR,tmp[0]))
@@ -164,26 +166,29 @@ def process_list():
 		dest = os.path.join(dest_dir,tmp[1]+".jpg")
 		dest_base = os.path.splitext(dest)[0]
 
-		#check for collisions
-		skip = False
+		#check for collisions/duplicates
+		skip_name = ""
+		found_name = False
 		if os.path.isfile(dest):
 			if md5sum(source) == md5sum(dest):
 				found_name = True
-				skip = True
-				if OPT.verbose >= 1:
-					print "SKIP",count,":",source,"\n\t--> exists at destination:",dest
-			else:
-				found_name = False
+				skip_name = dest
 			postfix = 1
 			while not found_name:
-				if not os.path.isfile(dest_base+"_"+str(postfix)+".jpg"):
+				if os.path.isfile(dest_base+"_"+str(postfix)+".jpg"):
+					if md5sum(source) == md5sum(dest_base+"_"+str(postfix)+".jpg"):
+						found_name = True
+						skip_name = dest
+				elif not os.path.isfile(dest_base+"_"+str(postfix)+".jpg"):
 					dest_base += "_" + str(postfix)
 					dest = dest_base + ".jpg"
 					found_name = True
 				else:
 					postfix += 1
 
-		if not skip:
+		if skip_name != "":
+			print "SKIP",count,":",source,"\n\t--> exists at destination:",skip_name
+		else:
 			#find raw files
 			raw_ext = ""  #assumes one raw file per jpg
 			if OPT.raw:
@@ -202,6 +207,10 @@ def process_list():
 					shutil.move(source,dest)
 					if OPT.raw and raw_ext != "":
 						shutil.move(source_base+raw_ext,dest_base+raw_ext)
+				#to change modify timestamp on files to match exif data
+				#os.utime(dest,(atime,mtime))
+				#if OPT.raw and raw_ext != "":
+					#os.utime(dest_base+raw_ext)
 
 			if OPT.verbose >= 1:
 				if not OPT.move:
@@ -212,6 +221,12 @@ def process_list():
 					print "MOVE",count,":",source,"\n\t-->",dest
 					if OPT.raw and raw_ext != "":
 						print "MOVE",count,":",source_base+raw_ext,"\n\t-->",dest_base+raw_ext
+
+	#closure
+	if len(error) != 0:
+		print "\n____________________________________________________________________\n\nErrors encountered"
+		for e in error:
+			print e
 
 def exif_get_datetime(file):
 	"""
