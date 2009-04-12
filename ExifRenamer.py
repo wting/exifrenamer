@@ -103,7 +103,7 @@ def set_options():
 		FORMAT_DIR = "%Y"+os.sep+"%m"+os.sep+"%d"
 		FORMAT_FILE = "%Y-%m-%d_%H.%M.%S"
 	else:
-		if OPT.verbose >= 2:
+		if OPT.verbose > 1:
 			print "*TEMPLATE:",OPT.template
 		if OPT.template.find(os.sep) == -1:
 			print "ERROR: Invalid template, DEST cannot be current directory."
@@ -126,7 +126,8 @@ def build_list():
 	cnt = 0
 	for dir_path, dir_names, file_names in os.walk(SOURCE):
 		for file in file_names:
-			print "looking at:",file
+			if OPT.verbose > 1:
+				print file
 			#finds jpegs based on mimetype and image headers
 			if mimetypes.guess_type(file)[0] == 'image/jpeg' and imghdr.what(os.path.join(dir_path,file)) == 'jpeg':
 				IMAGES.append((dir_path,file))
@@ -154,7 +155,7 @@ def process_list():
 
 		#handle bad timestamps within jpegs
 		try:
-			if OPT.verbose >= 2:
+			if OPT.verbose > 1:
 				print "*PROCESS",count,":",source
 			tmp = exif_get_datetime(source)
 		except TimeError, (e):
@@ -248,7 +249,7 @@ def exif_get_datetime(file):
 		t = str[10][:-1] #grabs the time
 
 		#handles malformed timestamps
-		if OPT.verbose >= 2:
+		if OPT.verbose > 1:
 			print "TIMESTAMP:",d,t
 		if d == "0000:00:00":
 			raise TimeError(d)
@@ -267,7 +268,7 @@ def md5sum(fname):
 	"""
 	global OPT
 	try:
-		if OPT.verbose >= 2:
+		if OPT.verbose > 1:
 			print "*MD5SUM:", fname,
 		f = file(fname,'rb')
 	except:
@@ -280,7 +281,7 @@ def md5sum(fname):
 			break
 		m.update(d)
 
-	if OPT.verbose >= 2:
+	if OPT.verbose > 1:
 		print "=",m.hexdigest()
 	return m.hexdigest()
 
