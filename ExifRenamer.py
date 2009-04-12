@@ -84,8 +84,8 @@ def set_options():
 	#checks for SOURCE and DEST arguments
 	if len(ARG) == 1 and OPT.original == False:
 		#parser.error("The option --original (modifies the source files) must be specified when using only a source directory.")
-		print "No DEST directory specified, using default directory ./ExifRenamer-output/"
-		DEST = "ExifRenamer-output/"
+		print "No DEST directory specified, using default directory ./ExifRenamer-YYYYMMDD_HH-MM-SS/"
+		DEST = "ExifRenamer-" + time.strftime("%Y%m%d_%H-%M-%S", time.localtime()) + os.sep
 	elif len(ARG) < 2 and OPT.original == False:
 		parser.print_help()
 		sys.exit(2)
