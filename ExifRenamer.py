@@ -126,6 +126,7 @@ def build_list():
 	cnt = 0
 	for dir_path, dir_names, file_names in os.walk(SOURCE):
 		for file in file_names:
+			print "looking at:",file
 			#finds jpegs based on mimetype and image headers
 			if mimetypes.guess_type(file)[0] == 'image/jpeg' and imghdr.what(os.path.join(dir_path,file)) == 'jpeg':
 				IMAGES.append((dir_path,file))
@@ -183,8 +184,7 @@ def process_list():
 					dest_base += "_" + str(postfix)
 					dest = dest_base + ".jpg"
 					found_name = True
-				else:
-					postfix += 1
+				postfix += 1
 
 		if skip_name != "":
 			print "SKIP",count,":",source,"\n\t--> exists at destination:",skip_name
@@ -265,7 +265,10 @@ def md5sum(fname):
 	"""
 	Returns the md5sum of a filename.
 	"""
+	global OPT
 	try:
+		if OPT.verbose >= 2:
+			print "*MD5SUM:", fname,
 		f = file(fname,'rb')
 	except:
 		return None ##cannot open file
@@ -277,6 +280,8 @@ def md5sum(fname):
 			break
 		m.update(d)
 
+	if OPT.verbose >= 2:
+		print "=",m.hexdigest()
 	return m.hexdigest()
 
 def mk_dir(path):
