@@ -37,7 +37,7 @@ import hashlib
 #https://sourceforge.net/projects/exif-py/
 import EXIF
 
-VERSION = "0.1.22"
+VERSION = "0.1.23"
 IMAGES = []
 
 class TimeError(Exception):
@@ -138,7 +138,7 @@ def build_list():
 			elif OPT.verbose > 1:
 				if mimetypes.guess_type(file)[0] != 'image/jpeg':
 					print "\t--> fail jpeg mime type"
-				if imghdr.what(os.path.join(dir_phat,file)) == 'jpeg':
+				if imghdr.what(os.path.join(dir_path,file)) != 'jpeg':
 					print "\t--> fail jpeg image header"
 	print "\n",len(IMAGES),"jpegs to consider."
 
