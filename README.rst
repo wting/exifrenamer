@@ -1,34 +1,16 @@
-========
+===========
 EXIFRENAMER
-========
+===========
 
-----------------------------
+-------------------------------------
 Moving files based on EXIF timestamps
-----------------------------
+-------------------------------------
 
 I wrote this small utility to alleviate the issue of manually organizing your photos or getting rid of DSCN_0012.JPG filenames.
 
 The utility reads the EXIF timestamp from the image file and then moves it to a destination directory based on that data.
 
-Currently matches against the following file extensions:
-- .jpg
-- .tif
-- .dng
-- .nef
-- .crw
-- .cr2
-- .raw
-- .raf
-- .mrw
-- .orf
-- .ptx
-- .pex
-- .arw
-- .srf
-- .sr2
-- .rw2
-
-Requires python to be installed and supports Linux and Cygwin bash shells.
+Requires python v2.6+ and supports Linux and Cygwin bash shells.
 
 Examples
 ========
@@ -38,6 +20,7 @@ Examples
  exifrenamer.py ~/inbox/ ~/outbox/
 
 will give an example out of::
+
  Building file list .
  5 images to consider.
  MOVE [1/5] : test_images/01/nikon d60.jpg
@@ -87,6 +70,7 @@ Installation
 ============
 
 Grab a copy of the source with::
+
  git clone git://github.com/wting/exifrenamer.git
 
 Then either add the directory to your path or sym link it from /usr/local/bin/.

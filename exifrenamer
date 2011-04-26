@@ -3,10 +3,9 @@
 # Copies images from source to destination while renaming based on EXIF
 # timestamp
 #
-# Copyright (c) 2009 William Ting (william dot h dot ting at gmail dot com)
+# Copyright (c) 2009 William Ting (i.am at williamting.com)
 # All rights reserved
-# Site: https://sourceforge.net/projects/exifedit
-# SVN: svn co https://exifedit.svn.sourceforge.net/svnroot/exifedit
+# Site: https://github.com/wting/exifrenamer
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,8 +19,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-#todo:
 
 import imghdr
 import mimetypes
@@ -53,7 +50,7 @@ def set_options():
 	global OPT, ARG, SOURCE, DEST, FORMAT_DIR, FORMAT_FILE
 	usage="%prog [OPTION] SOURCE DEST"
 	version="%prog " + VERSION
-	description="Copies jpeg and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
+	description="Copies images and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
 	parser = optparse.OptionParser(usage=usage,version=version,description=description)
 
 	parser.set_defaults(original=False,move=True,raw=True,run=True,template=None,verbose=1)
@@ -116,7 +113,7 @@ def set_options():
 
 def build_list():
 	"""
-	Traverses through source directory, checks for valid jpeg, extracts EXIF timestamp,
+	Traverses through source directory, checks for valid images, extracts EXIF timestamp,
 	checks for existing file, creates YYYY/MM/DD dir hieararchy, copies to destination folder.
 	"""
 	global IMAGES,SOURCE
