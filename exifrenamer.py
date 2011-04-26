@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copies jpegs from source to destination while renaming based on EXIF
+# Copies images from source to destination while renaming based on EXIF
 # timestamp
 #
 # Copyright (c) 2009 William Ting (william dot h dot ting at gmail dot com)
@@ -56,14 +56,14 @@ def set_options():
 	description="Copies jpeg and raw files with the same name within SOURCE to DEST, renaming the file based on the EXIF timestamp."
 	parser = optparse.OptionParser(usage=usage,version=version,description=description)
 
-	parser.set_defaults(original=False,move=False,raw=True,run=True,template=None,verbose=1)
+	parser.set_defaults(original=False,move=True,raw=True,run=True,template=None,verbose=1)
 
 	parser.add_option("-n", "--dry-run",
 		dest="run", action="store_false",
 		help="Simulate actions without making any changes.")
-	parser.add_option("-m", "--move",
-		dest="move",action="store_true",
-		help="Move the original file as opposed to copying.")
+	parser.add_option("-c", "--copy",
+		dest="move",action="store_false",
+		help="Copy the original file as opposed to moving.")
 	parser.add_option("-t", "--template",
 		dest="template",
 		help="Change destination directory and file format, default example: YYYY/MM/YYYYMMDD/YYYY-MM-DD_24hr\
@@ -140,7 +140,7 @@ def build_list():
 					print "\t--> fail jpeg mime type"
 				if imghdr.what(os.path.join(dir_path,file)) != 'jpeg':
 					print "\t--> fail jpeg image header"
-	print "\n",len(IMAGES),"jpegs to consider."
+	print "\n",len(IMAGES),"images to consider."
 
 def process_list():
 	"""
