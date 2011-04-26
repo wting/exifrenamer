@@ -66,9 +66,9 @@ def set_options():
 		help="Move the original file as opposed to copying.")
 	parser.add_option("-t", "--template",
 		dest="template",
-		help="Change destination directory and file format, default: %Y/%m/%d/%Y-%m-%d_%H.%M.%S\
+		help="Change destination directory and file format, default example: YYYY/MM/YYYYMMDD/YYYY-MM-DD_24hr\
 				%Y = 4 digit year, %y = 2 digit year, %m = 2 digit month, %b = abbreviated month name, %B = full month name, %d = 2 digit day,\
-					%H = 24 hour clock, %I = 12 hour clock, %M = minutes, %S = seconds")
+				%H = 24 hour clock, %I = 12 hour clock, %M = minutes, %S = seconds")
 	parser.add_option("-q", "--quiet",
 		dest="verbose", action="store_const", const=0,
 		help="Suppress all output.")
@@ -99,8 +99,8 @@ def set_options():
 		sys.exit(2)
 
 	#parse template format
-	if OPT.template == None:	#"%Y/%m/%d/%Y-%m-%d_%H.%M.%S"
-		FORMAT_DIR = "%Y"+os.sep+"%m"+os.sep+"%d"
+	if OPT.template == None:	#/2011/03/20110311/
+		FORMAT_DIR = "%Y"+os.sep+"%m"+os.sep+"%Y%m%d"
 		FORMAT_FILE = "%Y-%m-%d_%H.%M.%S"
 	else:
 		if OPT.verbose > 1:
