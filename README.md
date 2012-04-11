@@ -37,6 +37,10 @@ will result in:
     test_images/fail/notimestamp.jpg
             --> invalid timestamp:missing
 
+## Support
+
+Have questions or run into problems? Post it in the [issue forum](https://github.com/wting/exifrenamer/issues).
+
 ## Author
 
 William Ting (william.h.ting@gmail.com)
