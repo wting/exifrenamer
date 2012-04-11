@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-
-# Copies images from source to destination while renaming based on EXIF
-# timestamp
-#
-# Copyright (c) 2009 William Ting (i.am at williamting.com)
+# Copyright (c) William Ting 2009-2012
 # All rights reserved
 # Site: https://github.com/wting/exifrenamer
 #
@@ -30,11 +26,10 @@ import cPickle
 import shutil
 import hashlib
 
-#included with package, otherwise located at
-#https://sourceforge.net/projects/exif-py/
+sys.path.append('./lib/')
 import EXIF
 
-VERSION = "0.1.23"
+VERSION = "0.1.3"
 IMAGES = []
 
 class TimeError(Exception):
