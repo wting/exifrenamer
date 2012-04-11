@@ -6,8 +6,6 @@ I wrote this small utility to alleviate the issue of manually organizing your ph
 
 The utility reads the EXIF timestamp from the image file and then moves it to a destination directory based on that data.
 
-Requires python v2.6+ and supports Linux and Cygwin bash shells.
-
 ## Usage Examples
 
 Example command to move files from one folder to another:
@@ -59,6 +57,12 @@ You should have received a copy of the GNU General Public License
 along with exifrenamer.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Installation
+
+### Requirements
+
+Python v2.6+.
+
+### Source Code
 
 Grab a copy of the source with
 
