@@ -13,15 +13,25 @@ manually organizing your photos or getting rid of meaningless filenames
 The program reads the EXIF timestamp from the image file and then moves
 it to a destination directory based on that data.
 
-Installation
-------------
+Install
+-------
 
 ### Requirements
 
 Python v2.7+
 
-Uninstallation
---------------
+### Procedure
+
+Check out the source:
+
+    git clone git://github.com/wting/exifrenamer.git
+
+Run:
+
+    make install
+
+Uninstall
+---------
 
 Delete the program directory:
 
