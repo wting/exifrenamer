@@ -1,5 +1,5 @@
 PROJ = exifrenamer
-VERSION = v0.2.0
+VERSION = v0.2.1
 
 .PHONY: docs install uninstall
 
@@ -24,7 +24,7 @@ docs:
 
 release: docs
 	@echo
-	@echo "Update and commit ChangeLog, hit <ENTER> to continue..."
+	@echo "Update Makefile VERSION, ChangeLog, hit <ENTER> to continue..."
 	@echo
 	@read
 
@@ -35,7 +35,7 @@ release: docs
 	sed -i "s/^VERSION = \".*\"/VERSION = \"$(VERSION)\"/" ./$(PROJ)/$(PROJ)
 
 	# Commit the version change
-	git commit -m "version numbering" ./$(PROJ)/$(PROJ)
+	git commit -m "version numbering" ./Makefile ./ChangeLog ./$(PROJ)/$(PROJ)
 
 	# Create tag
 	git tag -s -a $(VERSION)
