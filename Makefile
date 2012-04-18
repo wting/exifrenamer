@@ -22,9 +22,14 @@ docs:
 	pandoc -s -w man docs/manpage_header.md docs/header.md docs/body.md -o docs/$(PROJ).1
 	pandoc -s -w markdown docs/header.md docs/install.md docs/body.md -o README.md
 
-release:
+release: docs
+	@echo
+	@echo "Update and commit ChangeLog, hit <ENTER> to continue..."
+	@echo
+	@read
+
 	# Check for tag existence
-	git describe --tags $(VERSION) 2>&1 >/dev/null || exit 1
+	git describe --tags $(VERSION) 2>&1 >/dev/null && exit 1
 
 	# Modify exifrenamer with correct version
 	sed -i "s/^VERSION = \".*\"/VERSION = \"$(VERSION)\"/" ./$(PROJ)/$(PROJ)
