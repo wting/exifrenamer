@@ -1,17 +1,12 @@
-EXIFRENAMER
-===========
+# EXIFRENAMER
 
-Moving files based on EXIF timestamps
--------------------------------------
+## Moving files based on EXIF timestamps
 
-I wrote this small utility to alleviate the issue of manually organizing
-your photos or getting rid of meaningless filenames (e.g. DSCN0012.JPG).
+I wrote this small utility to alleviate the issue of manually organizing your photos or getting rid of meaningless filenames (e.g. DSCN0012.JPG).
 
-The utility reads the EXIF timestamp from the image file and then moves
-it to a destination directory based on that data.
+The utility reads the EXIF timestamp from the image file and then moves it to a destination directory based on that data.
 
-Usage Examples
---------------
+## Usage Examples
 
 Example command to move files from one folder to another:
 
@@ -42,35 +37,30 @@ will result in:
     test_images/fail/notimestamp.jpg
             --> invalid timestamp:missing
 
-Support
--------
+## Support
 
-Have questions or run into problems? Post it in the [issue
-forum](https://github.com/wting/exifrenamer/issues).
+Have questions or run into problems? Post it in the [issue forum](https://github.com/wting/exifrenamer/issues).
 
-Author
-------
+## Author
 
 William Ting (william.h.ting@gmail.com)
 
-License
--------
+## License
 
-exifrenamer is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation, either version 3 of the License, or (at your
-option) any later version.
+exifrenamer is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-exifrenamer is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-Public License for more details.
+exifrenamer is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along
-with exifrenamer. If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with exifrenamer.  If not, see <http://www.gnu.org/licenses/>.
 
-Installation
-------------
+## Installation
 
 ### Requirements
 
@@ -82,7 +72,6 @@ Grab a copy of the source with
 
     git clone git://github.com/wting/exifrenamer.git
 
-Uninstallation
---------------
+## Uninstallation
 
 Simple remove the source code directory.
