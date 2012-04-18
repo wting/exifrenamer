@@ -23,6 +23,15 @@ docs:
 	pandoc -s -w markdown docs/header.md docs/install.md docs/body.md -o README.md
 
 release:
+	# Check for tag existence
+	git describe --tags $(VERSION) 2>&1 >/dev/null || exit 1
+
+	# Modify exifrenamer with correct version
+	sed -i "s/^VERSION = \".*\"/VERSION = \"$(VERSION)\"/" ./$(PROJ)/$(PROJ)
+
+	# Commit the version change
+	git commit -m "version numbering" ./$(PROJ)/$(PROJ)
+
 	# Create tag
 	git tag -s -a $(VERSION)
 
