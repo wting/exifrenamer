@@ -29,7 +29,7 @@ import hashlib
 sys.path.append('./lib/')
 import EXIF
 
-VERSION = "0.1.3"
+VERSION = "v0.2.0"
 IMAGES = []
 
 class TimeError(Exception):
