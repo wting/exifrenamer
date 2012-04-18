@@ -1,23 +1,61 @@
-EXIFRENAMER
-===========
+NAME
+----
 
-Moving files based on EXIF timestamps
--------------------------------------
+exifrenamer - move photos based on timestamp metadata
 
-I wrote this small utility to alleviate the issue of manually organizing
-your photos or getting rid of meaningless filenames (e.g. DSCN0012.JPG).
+SYNOPSIS
+--------
 
-The utility reads the EXIF timestamp from the image file and then moves
+exifrenamer is a small program designed to alleviate the issue of
+manually organizing your photos or getting rid of meaningless filenames
+(e.g. DSCN0012.JPG).
+
+The program reads the EXIF timestamp from the image file and then moves
 it to a destination directory based on that data.
 
-Usage Examples
+Installation
+------------
+
+### Requirements
+
+Python v2.7+
+
+Uninstallation
 --------------
+
+Delete the program directory:
+
+    rm -fr ~/.exifrenamer/
+
+Remove the following line from your `.bashrc`:
+
+    export PATH=~/.exifrenamer/bin:"${PATH}"
+
+% EXIFRENAMER(1) release-v0.2.0 % % 17 April 2012
+
+NAME
+----
+
+exifrenamer - move photos based on timestamp metadata
+
+SYNOPSIS
+--------
+
+exifrenamer is a small program designed to alleviate the issue of
+manually organizing your photos or getting rid of meaningless filenames
+(e.g. DSCN0012.JPG).
+
+The program reads the EXIF timestamp from the image file and then moves
+it to a destination directory based on that data.
+
+USAGE
+-----
 
 Example command to move files from one folder to another:
 
     exifrenamer.py ~/inbox/ ~/outbox/
 
-will result in:
+Command results:
 
     Building file list .
     5 images to consider.
@@ -42,47 +80,43 @@ will result in:
     test_images/fail/notimestamp.jpg
             --> invalid timestamp:missing
 
-Support
+OPTIONS
 -------
 
-Have questions or run into problems? Post it in the [issue
-forum](https://github.com/wting/exifrenamer/issues).
+Options must be passed to 'exifrenamer' and not the 'j' wrapper
+function.
 
-Author
-------
+    -a, --add DIR       manually add path to database
 
-William Ting (william.h.ting@gmail.com)
+    --stat              show database entries and their key weights
 
-License
--------
+    --version           show version information and exit
 
-exifrenamer is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation, either version 3 of the License, or (at your
-option) any later version.
-
-exifrenamer is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with exifrenamer. If not, see <http://www.gnu.org/licenses/>.
-
-Installation
+KNOWN ISSUES
 ------------
 
-### Requirements
+FILES
+-----
 
-Python v2.6+.
+exifrenamer is installed into the home directory contained in
+*\~/.exifrenamer/*.
 
-### Source Code
-
-Grab a copy of the source with
-
-    git clone git://github.com/wting/exifrenamer.git
-
-Uninstallation
+REPORTING BUGS
 --------------
 
-Simple remove the source code directory.
+For any issues please visit the following URL:
+
+*https://github.com/wting/exifrenamer/issues*
+
+AUTHORS
+-------
+
+exifrenamer written by William Ting.
+
+COPYRIGHT
+---------
+
+Copyright © 2012 Free Software Foundation, Inc. License GPLv3+: GNU GPL
+version 3 or later <http://gnu.org/licenses/gpl.html>. This is free
+software: you are free to change and redistribute it. There is NO
+WARRANTY, to the extent permitted by law.
