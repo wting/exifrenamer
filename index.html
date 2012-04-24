@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>exifrenamer by wting</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/wting/exifrenamer">Fork On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/wting/exifrenamer/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/wting/exifrenamer/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>exifrenamer</h1>
+          <p>Moves jpg files based on EXIF timestamp</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/wting">wting</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h3>About</h3>
+
+<p>I wrote this small utility to alleviate the issue of manually organizing your photos or getting rid of meaningless filenames (e.g. DSCN0012.JPG).</p>
+
+<p>The utility reads the EXIF timestamp from the image file and then moves it to a destination directory based on that data.</p>
+
+<h2>Usage Examples</h2>
+
+<p>Example command to move files from one folder to another:</p>
+
+<pre><code>exifrenamer.py ~/inbox/ ~/outbox/
+</code></pre>
+
+<p>will result in:</p>
+
+<pre><code>Building file list .
+5 images to consider.
+MOVE [1/5] : test_images/01/nikon d60.jpg
+        --&gt; outbox/2009/01/20090123/2009-01-23_19.31.31.jpg
+MOVE [2/5] : test_images/01/02/canon 350d.jpg
+        --&gt; outbox/2009/01/20090123/2009-01-23_21.37.03.jpg
+ERROR [3/5] : test_images/fail/0000 timestamp.jpg
+        --&gt; invalid timestamp: 0000:00:00
+ERROR [4/5] : test_images/fail/notimestamp.jpg
+        --&gt; invalid timestamp: missing
+MOVE [5/5] : test_images/raw/dsc_5149.jpg
+        --&gt; outbox/2009/03/20090315/2009-03-15_22.07.00.jpg
+MOVE [5/5] : test_images/raw/dsc_5149.nef
+        --&gt; outbox/2009/03/20090315/2009-03-15_22.07.00.nef
+
+____________________________________________________________________
+
+Errors encountered
+test_images/fail/0000 timestamp.jpg
+        --&gt; invalid timestamp:0000:00:00
+test_images/fail/notimestamp.jpg
+        --&gt; invalid timestamp:missing
+</code></pre>
+
+<h2>Author</h2>
+
+<p>William Ting (william.h.ting at gmail.com)</p>
+
+<h2>Support</h2>
+
+<p>Have questions or run into problems? Post it in the <a href="https://github.com/wting/exifrenamer/issues">issue forum</a>.</p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-29827268-4");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
