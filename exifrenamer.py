@@ -44,7 +44,8 @@ def get_jpegs(path):
 
 
 def get_timestamp(filepath):
-    # TODO(ting|2013-11-07): fall back to DateTimeDigitized if empty
+    # TODO(ting|#1): fall back to DateTimeDigitized if empty
+    # FIXME(ting|#2): handle missing timestamp case
     with open(filepath, 'rb') as f:
         tags = exifread.process_file(
                 f,
