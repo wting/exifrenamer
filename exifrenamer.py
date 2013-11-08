@@ -37,6 +37,10 @@ import exifread
 VERSION = "0.3.0"
 
 
+class BadExifTimestampError(Exception):
+    pass
+
+
 class MissingTimestampError(Exception):
     pass
 
@@ -93,6 +97,9 @@ def parse_args(args):
 def rename_file(target_dir, input_path):
     try:
         dt = timestamp_to_datetime(get_timestamp(input_path))
+    except BadExifTimestampError:
+        print("[ERROR] Invalid timestamp: %s\n" % input_path)
+        return
     except MissingTimestampError:
         print("[ERROR] Missing timestamp: %s\n" % input_path)
         return
@@ -112,8 +119,12 @@ def rename_file(target_dir, input_path):
 
 
 def timestamp_to_datetime(string):
-    elements = map(int, re.split(':| ', string))
-    return datetime.datetime(*elements)
+    elements = *map(int, re.split(':| ', string))
+
+    if len(elements) != 6:
+        raise BadExifTimestampError
+
+    return datetime.datetime(elements)
 
 
 def main(argv=None):
