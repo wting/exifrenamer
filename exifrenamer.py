@@ -70,6 +70,17 @@ def datetime_to_path(dt):
             dt.second)
 
 
+def find_alternate_filename(path):
+    assert(path.endswith('.jpg'))
+
+    matches = re.search(r'_(?P<count>\d{4}).jpg$', path)
+
+    if not matches:
+        return path[:-4] + '_0000.jpg'
+
+    return "%s_%04d.jpg" % (path[:-9], increment(matches.group('count')))
+
+
 def get_jpegs(path):
     for dirpath, dirnames, files in os.walk(path):
         for f in files:
@@ -87,6 +98,19 @@ def get_timestamp(filepath):
         return str(tags['EXIF DateTimeDigitized'])
     else:
         raise MissingTimestampError
+
+
+def increment(num):
+    return int(num) + 1
+
+
+def move_file(src, dst):
+    # NOTE(ting|2013-11-07): not thread safe
+    while os.path.exists(dst):
+        dst = find_alternate_filename(dst)
+
+    print("%s\n-> %s" % (src, dst))
+    shutil.move(src, dst)
 
 
 def parse_args(args):
