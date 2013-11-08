@@ -45,6 +45,15 @@ class MissingTimestampError(Exception):
     pass
 
 
+def create_dir(dirpath):
+    # create directory in a thread safe fashion
+    try:
+        os.makedirs(dirpath)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
+
 def datetime_to_path(dt):
     # output: DateTime object -> yyyy/mm/yyyymmdd/yyyymmdd_hhmmss.jpg
     return "%04d/%02d/%02d%02d%02d/%02d%02d%02d_%02d%02d%02d.jpg" % (
@@ -105,17 +114,9 @@ def rename_file(target_dir, input_path):
         return
 
     output_path = os.path.join(target_dir, datetime_to_path(dt))
-    output_dir = os.path.dirname(output_path)
 
-    # create directory in a thread safe fashion
-    try:
-        os.makedirs(output_dir)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise
-
-    print("%s\n-> %s" % (input_path, output_path))
-    shutil.move(input_path, output_path)
+    create_dir(os.path.dirname(output_path))
+    move_file(input_path, output_path)
 
 
 def timestamp_to_datetime(string):
