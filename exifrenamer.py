@@ -61,15 +61,13 @@ def get_jpegs(path):
 
 
 def get_timestamp(filepath):
-    # TODO(ting|#1): fall back to DateTimeDigitized if empty
-    # FIXME(ting|#2): handle missing timestamp case
     with open(filepath, 'rb') as f:
-        tags = exifread.process_file(
-                f,
-                details=False,
-                stop_tag='EXIF DateTimeOriginal')
+        tags = exifread.process_file(f, details=False)
 
-    return str(tags['EXIF DateTimeOriginal'])
+    if 'EXIF DateTimeOriginal' in tags:
+        return str(tags['EXIF DateTimeOriginal'])
+    elif 'EXIF DateTimeDigitized' in tags:
+        return str(tags['EXIF DateTimeDigitized'])
 
 
 def parse_args(args):
