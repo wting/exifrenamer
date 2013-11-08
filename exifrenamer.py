@@ -78,9 +78,10 @@ def parse_args(args):
                 "Usage: %s [input directory] [output directory]\n" % argv[0])
         sys.exit(1)
 
-    if not os.path.isdir(args[1]):
-        sys.stderr.write("Invalid directory: %s\n" % args[1])
-        sys.exit(1)
+    for dirpath in args[1:]:
+        if not os.path.isdir(dirpath):
+            sys.stderr.write("Invalid directory: %s\n" % dirpath)
+            sys.exit(1)
 
     return get_jpegs(args[1]), args[2]
 
