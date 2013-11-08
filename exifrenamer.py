@@ -119,12 +119,12 @@ def rename_file(target_dir, input_path):
 
 
 def timestamp_to_datetime(string):
-    elements = *map(int, re.split(':| ', string))
+    elements = map(int, re.split(':| ', string))
 
-    if len(elements) != 6:
+    if len(*elements) != 6:
         raise BadExifTimestampError
 
-    return datetime.datetime(elements)
+    return datetime.datetime(*elements)
 
 
 def main(argv=None):
