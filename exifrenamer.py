@@ -37,6 +37,10 @@ import exifread
 VERSION = "0.3.0"
 
 
+class MissingTimestampError(Exception):
+    pass
+
+
 def datetime_to_path(dt):
     # output: DateTime object -> yyyy/mm/yyyymmdd/yyyymmdd_hhmmss.jpg
     return "%04d/%02d/%02d%02d%02d/%02d%02d%02d_%02d%02d%02d.jpg" % (
@@ -68,6 +72,8 @@ def get_timestamp(filepath):
         return str(tags['EXIF DateTimeOriginal'])
     elif 'EXIF DateTimeDigitized' in tags:
         return str(tags['EXIF DateTimeDigitized'])
+    else:
+        raise MissingTimestampError
 
 
 def parse_args(args):
@@ -85,7 +91,12 @@ def parse_args(args):
 
 
 def rename_file(target_dir, input_path):
-    dt = timestamp_to_datetime(get_timestamp(input_path))
+    try:
+        dt = timestamp_to_datetime(get_timestamp(input_path))
+    except MissingTimestampError:
+        print("[ERROR] Missing timestamp: %s\n" % input_path)
+        return
+
     output_path = os.path.join(target_dir, datetime_to_path(dt))
     output_dir = os.path.dirname(output_path)
 
