@@ -22,6 +22,7 @@
 from __future__ import print_function
 
 
+import argparse
 import datetime
 import errno
 from functools import partial
@@ -45,8 +46,11 @@ class MissingTimestampError(Exception):
     pass
 
 
-def create_dir(dirpath):
+def create_dir(dirpath, simulate=False):
     # create directory in a thread safe fashion
+    if simulate:
+        return
+
     try:
         os.makedirs(dirpath)
     except OSError as exception:
@@ -104,30 +108,53 @@ def increment(num):
     return int(num) + 1
 
 
-def move_file(src, dst):
-    # NOTE(ting|2013-11-07): not thread safe
+def move_file(src, dst, simulate=False):
+    # not thread safe
     while os.path.exists(dst):
         dst = find_alternate_filename(dst)
 
     print("%s\n-> %s" % (src, dst))
-    shutil.move(src, dst)
+
+    if not simulate:
+        shutil.move(src, dst)
 
 
-def parse_args(args):
-    if len(args) != 3:
-        sys.stderr.write(
-                "Usage: %s [input directory] [output directory]\n" % argv[0])
+def parse_args():
+    parser = argparse.ArgumentParser(
+            description='Organize and move photos based on timestamp.')
+    parser.add_argument('input_dir')
+    parser.add_argument('output_dir')
+    parser.add_argument(
+            '-s',
+            '--simulate',
+            action='store_true',
+            default=False)
+    parser.add_argument(
+            '-v',
+            '--version',
+            action='version',
+            version='exifrenamer v' + VERSION)
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.input_dir):
+        sys.stderr.write("Invalid directory: %s\n" % args.input_dir)
         sys.exit(1)
 
-    for dirpath in args[1:]:
-        if not os.path.isdir(dirpath):
-            sys.stderr.write("Invalid directory: %s\n" % dirpath)
-            sys.exit(1)
+    if not os.path.isdir(args.output_dir):
+        sys.stderr.write("Invalid directory: %s\n" % args.output_dir)
+        sys.exit(1)
 
-    return get_jpegs(args[1]), args[2]
+    if args.input_dir == args.output_dir:
+        sys.stderr.write("Input and output directories need to be different.\n")
+        sys.exit(1)
+
+    if args.simulate:
+        print("Simulation...")
+
+    return get_jpegs(args.input_dir), args.output_dir, args.simulate
 
 
-def rename_file(target_dir, input_path):
+def rename_file(target_dir, input_path, simulate=False):
     try:
         dt = timestamp_to_datetime(get_timestamp(input_path))
     except BadTimestampError:
@@ -138,26 +165,22 @@ def rename_file(target_dir, input_path):
         return
 
     output_path = os.path.join(target_dir, datetime_to_path(dt))
-
-    create_dir(os.path.dirname(output_path))
-    move_file(input_path, output_path)
+    create_dir(os.path.dirname(output_path), simulate=simulate)
+    move_file(input_path, output_path, simulate=simulate)
 
 
 def timestamp_to_datetime(string):
     elements = map(int, re.split(':| ', string))
 
-    if len(*elements) != 6:
+    if len(elements) != 6:
         raise BadTimestampError
 
     return datetime.datetime(*elements)
 
 
-def main(argv=None):
-    if not argv:
-        argv = sys.argv
-
-    input_paths, output_dir = parse_args(argv)
-    rename_files = partial(rename_file, output_dir)
+def main():
+    input_paths, output_dir, simulate = parse_args()
+    rename_files = partial(rename_file, output_dir, simulate=simulate)
     map(rename_files, input_paths)
 
 
