@@ -46,9 +46,9 @@ class MissingTimestampError(Exception):
     pass
 
 
-def create_dir(dirpath, simulate=False):
+def create_dir(args, dirpath):
     # create directory in a thread safe fashion
-    if simulate:
+    if args.simulate:
         return
 
     try:
@@ -108,14 +108,14 @@ def increment(num):
     return int(num) + 1
 
 
-def move_file(src, dst, simulate=False):
+def move_file(args, src, dst):
     # not thread safe
-    while os.path.exists(dst):
+    while not args.overwrite and os.path.exists(dst):
         dst = find_alternate_filename(dst)
 
     print("%s\n-> %s" % (src, dst))
 
-    if not simulate:
+    if not args.simulate:
         shutil.move(src, dst)
 
 
@@ -124,6 +124,11 @@ def parse_args():
             description='Organize and move photos based on timestamp.')
     parser.add_argument('input_dir')
     parser.add_argument('output_dir')
+    parser.add_argument(
+            '-o',
+            '--overwrite',
+            action='store_true',
+            default=False)
     parser.add_argument(
             '-s',
             '--simulate',
@@ -151,10 +156,10 @@ def parse_args():
     if args.simulate:
         print("Simulation...")
 
-    return get_jpegs(args.input_dir), args.output_dir, args.simulate
+    return get_jpegs(args.input_dir), args
 
 
-def rename_file(target_dir, input_path, simulate=False):
+def rename_file(args, input_path):
     try:
         dt = timestamp_to_datetime(get_timestamp(input_path))
     except BadTimestampError:
@@ -164,9 +169,9 @@ def rename_file(target_dir, input_path, simulate=False):
         print("[ERROR] Missing timestamp: %s\n" % input_path)
         return
 
-    output_path = os.path.join(target_dir, datetime_to_path(dt))
-    create_dir(os.path.dirname(output_path), simulate=simulate)
-    move_file(input_path, output_path, simulate=simulate)
+    output_dir = os.path.join(args.output_dir, datetime_to_path(dt))
+    create_dir(args, os.path.dirname(output_dir))
+    move_file(args, input_path, output_dir)
 
 
 def timestamp_to_datetime(string):
@@ -179,8 +184,8 @@ def timestamp_to_datetime(string):
 
 
 def main():
-    input_paths, output_dir, simulate = parse_args()
-    rename_files = partial(rename_file, output_dir, simulate=simulate)
+    input_paths, args = parse_args()
+    rename_files = partial(rename_file, args)
     map(rename_files, input_paths)
 
 
