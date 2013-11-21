@@ -77,12 +77,12 @@ def datetime_to_path(dt):
 def find_alternate_filename(path):
     assert(path.endswith('.jpg'))
 
-    matches = re.search(r'_(?P<count>\d{4}).jpg$', path)
+    matches = re.search(r'-(?P<count>\d{4}).jpg$', path)
 
     if not matches:
-        return path[:-4] + '_0000.jpg'
+        return path[:-4] + '-0000.jpg'
 
-    return "%s_%04d.jpg" % (path[:-9], increment(matches.group('count')))
+    return "%s-%04d.jpg" % (path[:-9], increment(matches.group('count')))
 
 
 def get_jpegs(path):
