@@ -26,6 +26,7 @@ import argparse
 import datetime
 import errno
 from functools import partial
+from itertools import tee
 import os
 import re
 import shutil
@@ -44,6 +45,25 @@ class BadTimestampError(Exception):
 
 class MissingTimestampError(Exception):
     pass
+
+
+def check_overwrite_collisions(input_paths):
+    seen = set()
+
+    for path in input_paths:
+        try:
+            dt = timestamp_to_datetime(get_timestamp(path))
+            if dt in seen:
+                print("[ERROR] Duplicate timestamps detected, --overwrite will result in loss of photos: %s"
+                        % path)
+                sys.exit(2)
+            seen.add(dt)
+        except BadTimestampError:
+            print("[ERROR] Invalid timestamp: %s\n" % path)
+            continue
+        except MissingTimestampError:
+            print("[ERROR] Missing timestamp: %s\n" % path)
+            continue
 
 
 def create_dir(args, dirpath):
@@ -185,8 +205,13 @@ def timestamp_to_datetime(string):
 
 def main():
     input_paths, args = parse_args()
+    it1, it2 = tee(input_paths)
     rename_files = partial(rename_file, args)
-    map(rename_files, input_paths)
+
+    if args.overwrite:
+        check_overwrite_collisions(it2)
+
+    map(rename_files, it1)
 
 
 if __name__ == "__main__":
