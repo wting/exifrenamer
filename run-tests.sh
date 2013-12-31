@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nosetests -vv --with-coverage --cover-package=exifrenamer
+nosetests -v --with-coverage --cover-erase --cover-package=exifrenamer
