@@ -2,13 +2,18 @@ language: python
 
 python:
   - 2.7
+  - 3.3
+  - pypy
 
 install:
+  - pip install --use-mirrors coveralls
   - pip install --use-mirrors -r dev-requirements.txt
   - pip install --use-mirrors -r requirements.txt
 
 script:
-  - nosetests -v --with-coverage --cover-erase --cover-package=exifrenamer
+  - nosetests -v --with-coverage --cover-package=exifrenamer
+  - coverage run --source=exifrenamer tests/exifrenamer_test.py
+  - coverage report -m
 
 after_sucess:
-  - coveralls
+  - coveralls --verbose

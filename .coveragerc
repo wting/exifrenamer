@@ -6,8 +6,20 @@ omit =
 
 [report]
 exclude_lines =
+    # re-enable standard pragma
     pragma: no cover
+
+    # debug code
     def __repr__
+    if self\.debug
+
+    # defensive code
+    raise AssertionError
     raise NotImplementedError
+
+    # non-runnable code:
+    if False:
     if __name__ == .__main__.:
+
+    # misc boilerplate
     def parse_args
