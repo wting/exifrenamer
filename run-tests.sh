@@ -1,3 +1,3 @@
 #!/bin/bash
 
-testify tests
+nosetests -vv --with-coverage --cover-package=exifrenamer
