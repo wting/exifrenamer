@@ -1,1 +1,1 @@
-ExifRead>=1.4.1
+ExifRead>=1.4.0

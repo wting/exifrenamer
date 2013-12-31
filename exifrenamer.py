@@ -14,8 +14,8 @@
   GNU General Public License for more details.
 
   *  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  along with this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """
 
 
@@ -33,7 +33,7 @@ import shutil
 import sys
 
 
-import exifread
+from exifread import process_file
 
 
 VERSION = "0.3.0"
@@ -114,7 +114,7 @@ def get_jpegs(path):
 
 def get_timestamp(filepath):
     with open(filepath, 'rb') as f:
-        tags = exifread.process_file(f, details=False)
+        tags = process_file(f, details=False)
 
     if 'EXIF DateTimeOriginal' in tags:
         return str(tags['EXIF DateTimeOriginal'])
@@ -170,7 +170,8 @@ def parse_args():
         sys.exit(1)
 
     if args.input_dir == args.output_dir:
-        sys.stderr.write("Input and output directories need to be different.\n")
+        sys.stderr.write("Input and output directories need to be \
+                different.\n")
         sys.exit(1)
 
     if args.simulate:
