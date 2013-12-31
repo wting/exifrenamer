@@ -7,4 +7,4 @@ install:
   - pip install --use-mirrors -r dev-requirements.txt
   - pip install --use-mirrors -r requirements.txt
 
-script: run-tests.sh
+script: nosetests -vv --with-coverage --cover-package=exifrenamer
