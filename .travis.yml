@@ -15,5 +15,5 @@ script:
   - coverage run --source=exifrenamer tests/exifrenamer_test.py
   - coverage report -m
 
-after_sucess:
+after_success:
   - coveralls --verbose
