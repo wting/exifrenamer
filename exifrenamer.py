@@ -54,9 +54,7 @@ def check_overwrite_collisions(input_paths):
         try:
             dt = timestamp_to_datetime(get_timestamp(path))
             if dt in seen:
-                print("[ERROR] Duplicate timestamps detected, \
-                        --overwrite will result in loss of photos: %s" % path)
-                sys.exit(2)
+                print("[ERROR] Duplicate timestamps detected, --overwrite will result in loss of photos: %s" % path)
             seen.add(dt)
         except BadTimestampError:
             print("[ERROR] Invalid timestamp: %s\n" % path)
