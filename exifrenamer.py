@@ -184,10 +184,13 @@ def rename_file(args, input_path):
     try:
         dt = timestamp_to_datetime(get_timestamp(input_path))
     except BadTimestampError:
-        print("[ERROR] Invalid timestamp: %s\n" % input_path)
+        print("\n[ERROR] Invalid timestamp: %s\n" % input_path)
         return
     except MissingTimestampError:
-        print("[ERROR] Missing timestamp: %s\n" % input_path)
+        print("\n[ERROR] Missing timestamp: %s\n" % input_path)
+        return
+    except UnicodeEncodeError:
+        print("\n[ERROR] EXIF read metadata failure: %s\n" % input_path)
         return
 
     output_dir = os.path.join(args.output_dir, datetime_to_path(dt))
