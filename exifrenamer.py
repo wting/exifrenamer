@@ -57,10 +57,13 @@ def check_overwrite_collisions(input_paths):
                 print("[ERROR] Duplicate timestamps detected, --overwrite will result in loss of photos: %s" % path)
             seen.add(dt)
         except BadTimestampError:
-            print("[ERROR] Invalid timestamp: %s\n" % path)
+            print("[ERROR] Invalid timestamp: %s" % path)
             continue
         except MissingTimestampError:
-            print("[ERROR] Missing timestamp: %s\n" % path)
+            print("[ERROR] Missing timestamp: %s" % path)
+            continue
+        except UnicodeEncodeError:
+            print("[ERROR] Can't read EXIF data: %s" % path)
             continue
 
 
@@ -131,7 +134,7 @@ def move_file(args, src, dst):
     while not args.overwrite and os.path.exists(dst):
         dst = find_alternate_filename(dst)
 
-    print("%s\n-> %s" % (src, dst))
+    print("%s -> %s" % (src, dst))
 
     if not args.simulate:
         shutil.move(src, dst)
@@ -168,8 +171,7 @@ def parse_args():
         sys.exit(1)
 
     if args.input_dir == args.output_dir:
-        sys.stderr.write("Input and output directories need to be \
-                different.\n")
+        sys.stderr.write("Input and output directories need to be different.\n")
         sys.exit(1)
 
     if args.simulate:
@@ -182,13 +184,13 @@ def rename_file(args, input_path):
     try:
         dt = timestamp_to_datetime(get_timestamp(input_path))
     except BadTimestampError:
-        print("\n[ERROR] Invalid timestamp: %s\n" % input_path)
+        print("[ERROR] Invalid timestamp: %s" % input_path)
         return
     except MissingTimestampError:
-        print("\n[ERROR] Missing timestamp: %s\n" % input_path)
+        print("[ERROR] Missing timestamp: %s" % input_path)
         return
     except UnicodeEncodeError:
-        print("\n[ERROR] EXIF read metadata failure: %s\n" % input_path)
+        print("[ERROR] Can't read EXIF data: %s" % input_path)
         return
 
     output_dir = os.path.join(args.output_dir, datetime_to_path(dt))
